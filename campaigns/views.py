@@ -2,8 +2,7 @@ from rest_framework import viewsets, views, response
 from django.db.models import Sum, Avg, Count
 from .models import Campaign
 from .serializers import CampaignSerializer
-import urllib.request
-import json
+import requests
 
 class CampaignViewSet(viewsets.ModelViewSet):
     queryset = Campaign.objects.all().order_by('-created_at')
@@ -31,8 +30,9 @@ class InfluencerProxyView(views.APIView):
     def get(self, request):
         # Fetch mock data from randomuser.me
         try:
-            with urllib.request.urlopen("https://randomuser.me/api/?results=5") as url:
-                data = json.loads(url.read().decode())
-                return response.Response(data['results'])
-        except Exception as e:
+            res = requests.get("https://randomuser.me/api/?results=5", timeout=10)
+            res.raise_for_status()
+            data = res.json()
+            return response.Response(data['results'])
+        except requests.RequestException as e:
             return response.Response({'error': str(e)}, status=500)
