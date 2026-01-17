@@ -17,13 +17,13 @@ class DashboardStatsView(views.APIView):
         avg_engagement = Campaign.objects.aggregate(Avg('engagement_score'))['engagement_score__avg'] or 0
         
         # Platform breakdown
-        platform_stats = Campaign.objects.values('platform').annotate(count=Count('platform'))
+        platform_stats = list(Campaign.objects.values('platform').annotate(count=Count('platform')))
         
         return response.Response({
             'total_campaigns': total_campaigns,
             'active_campaigns': active_campaigns,
-            'total_budget': total_budget,
-            'avg_engagement': round(avg_engagement, 1),
+            'total_budget': float(total_budget),
+            'avg_engagement': round(avg_engagement, 1) if avg_engagement else 0,
             'platform_stats': platform_stats
         })
 
